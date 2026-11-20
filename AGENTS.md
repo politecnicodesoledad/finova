@@ -28,3 +28,12 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## FINOVA architecture rules
+
+- The UI must stay visually identical to the original HTML prototype; port markup/classes verbatim instead of redesigning. Why: the client's top rule is "no cambiar el diseño ni el funcionamiento".
+- The prototype's stylesheet lives in `src/styles/finova-legacy.css`, imported into the `utilities` layer before Tailwind's utilities, and the Tailwind v3 palette is pinned in `@theme`. Why: this reproduces the original CDN cascade and exact colors.
+- Where a v3 class combo `leading-* + sm:text-*` appears, add the matching `sm:leading-*` explicitly. Why: in v3 the responsive font-size line-height overrode `leading-*`; v4 does not.
+- Business rules are pure functions in `src/services/rules.ts`; state changes go through actions in `src/store/appStore.ts` (zustand, persisted to localStorage via `services/storage.ts`). Why: one place for rules, testable in `src/test/finova-rules.test.ts`.
+- The two games are imperative engines (`src/games/arcade`, `src/games/market`) mounted by React components and never re-rendered by React. Why: keeps canvas/DOM animation behavior identical to the original.
+- Supabase is optional: `src/lib/supabase.ts` returns null without `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`, and the app runs in demo mode. Secure rewards/limits/claims are Postgres RPCs in `database/finova_schema.sql` (run manually in the client's own Supabase), not in `supabase/migrations`. Why: the client brings their own Supabase project for Vercel.
